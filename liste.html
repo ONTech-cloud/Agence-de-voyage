@@ -1,79 +1,99 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Liste des réservations</title>
+  <meta charset="UTF-8" />
+  <title>Liste des Réservations</title>
   <style>
     body {
-      font-family: sans-serif;
-      background-color: #f1f8e9;
-      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #eef6ff;
+      margin: 20px;
+      color: #222;
     }
     h1 {
       text-align: center;
-      color: #33691e;
-    }
-    .bloc {
-      background-color: #ffffff;
-      border: 1px solid #c5e1a5;
-      padding: 15px;
+      color: #3759e6;
       margin-bottom: 20px;
-      border-radius: 10px;
     }
-    .passager {
-      margin-left: 15px;
-      background-color: #f0f4c3;
-      padding: 10px;
+    .reservation {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .vol-info, .passager-info {
+      margin-bottom: 10px;
+    }
+    .vol-info strong, .passager-info strong {
+      color: #3759e6;
+    }
+    .passager-info {
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
       margin-top: 10px;
-      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>Liste des réservations</h1>
-  <div id="liste"></div>
+  <h1>Liste des Réservations</h1>
+  <div id="listeReservations">Chargement des réservations...</div>
 
-  <script>
-    const data = JSON.parse(localStorage.getItem("reservation"));
-    const container = document.getElementById("liste");
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-    if (data) {
-      const bloc = document.createElement("div");
-      bloc.className = "bloc";
-      bloc.innerHTML += `
-        <p><strong>Départ :</strong> ${data.depart}</p>
-        <p><strong>Arrivée :</strong> ${data.arrivee}</p>
-        <p><strong>Date de départ :</strong> ${data.date_depart}</p>
-        <p><strong>Jour d’arrivée :</strong> ${data.jour_arrivee}</p>
-        <p><strong>Heure de départ :</strong> ${data.heure_depart}</p>
-        <p><strong>Heure d’arrivée :</strong> ${data.heure_arrivee}</p>
-        <p><strong>Numéro de vol :</strong> ${data.num_vol}</p>
-        <p><strong>Compagnie :</strong> ${data.compagnie}</p>
-        <p><strong>Classe :</strong> ${data.classe}</p>
-        <p><strong>Terminal :</strong> ${data.terminal}</p>
-        <p><strong>Porte :</strong> ${data.porte}</p>
-      `;
+    const listeDiv = document.getElementById('listeReservations');
 
-      let i = 1;
-      while (data[`nom_passager_${i}`]) {
-        const p = document.createElement("div");
-        p.className = "passager";
-        p.innerHTML = `
-          <h4>Passager ${i}</h4>
-          <p><strong>Nom :</strong> ${data[`nom_passager_${i}`]}</p>
-          <p><strong>Âge :</strong> ${data[`age_passager_${i}`]}</p>
-          <p><strong>Téléphone :</strong> ${data[`tel_passager_${i}`]}</p>
-          <p><strong>Email :</strong> ${data[`email_passager_${i}`]}</p>
-          <p><strong>Billet :</strong> ${data[`billet_passager_${i}`]}</p>
-        `;
-        bloc.appendChild(p);
-        i++;
+    async function afficherReservations() {
+      const querySnapshot = await getDocs(collection(db, "reservations"));
+      if (querySnapshot.empty) {
+        listeDiv.innerHTML = "<p>Aucune réservation trouvée.</p>";
+        return;
       }
 
-      container.appendChild(bloc);
-    } else {
-      container.innerHTML = "<p>Aucune réservation enregistrée.</p>";
+      listeDiv.innerHTML = "";
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+
+        const divReservation = document.createElement('div');
+        divReservation.className = "reservation";
+
+        divReservation.innerHTML = `
+          <div class="vol-info">
+            <strong>Vol de ${data.depart} à ${data.arrivee}</strong><br/>
+            Date départ: ${data.date_depart} &nbsp;&nbsp; Jour arrivée: ${data.jour_arrivee}<br/>
+            Heure départ: ${data.heure_depart} &nbsp;&nbsp; Heure arrivée: ${data.heure_arrivee}<br/>
+            Numéro vol: ${data.num_vol} &nbsp;&nbsp; Compagnie: ${data.compagnie}<br/>
+            Classe: ${data.classe} &nbsp;&nbsp; Terminal: ${data.terminal} &nbsp;&nbsp; Porte: ${data.porte}
+          </div>
+          <div>
+            <strong>Passagers:</strong>
+          </div>
+        `;
+
+        data.passagers.forEach((p, i) => {
+          const divPassager = document.createElement('div');
+          divPassager.className = "passager-info";
+          divPassager.innerHTML = `
+            <em>Passager ${i+1}:</em><br/>
+            Nom: ${p.nom}<br/>
+            Âge: ${p.age}<br/>
+            Téléphone: ${p.tel}<br/>
+            Email: ${p.email}<br/>
+            Numéro billet: ${p.billet}
+          `;
+          divReservation.appendChild(divPassager);
+        });
+
+        listeDiv.appendChild(divReservation);
+      });
     }
+
+    afficherReservations();
   </script>
 </body>
 </html>
