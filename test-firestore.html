@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Test Envoi Firestore</title>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB9UUdqL1tnF5zHBbFzfNszStvOe8DRDJE",
+    authDomain: "agence-voyage-2c207.firebaseapp.com",
+    projectId: "agence-voyage-2c207",
+    storageBucket: "agence-voyage-2c207.appspot.com",
+    messagingSenderId: "166889748731",
+    appId: "1:166889748731:web:24e0ba99ecc4d9b0acd85e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.envoyerReservation = async function () {
+    const reservation = {
+      depart: "Montréal",
+      arrivee: "Québec",
+      date_depart: "2025-07-09",
+      jour_arrivee: "2025-07-10",
+      heure_depart: "10:00",
+      heure_arrivee: "12:00",
+      num_vol: "123",
+      compagnie: "AirTest",
+      classe: "Économique",
+      terminal: "1",
+      porte: "A5",
+      passagers: [
+        {
+          nom: "Omran",
+          age: 12,
+          telephone: "5141234567",
+          email: "omran@example.com",
+          numero_billet: "A1B2C3"
+        }
+      ]
+    };
+
+    try {
+      const docRef = await addDoc(collection(db, "reservations"), reservation);
+      alert("Réservation envoyée avec l'ID : " + docRef.id);
+    } catch (e) {
+      alert("Erreur lors de l'envoi : " + e.message);
+    }
+  };
+</script>
+</head>
+<body>
+  <h1>Test Envoi Firestore</h1>
+  <button onclick="envoyerReservation()">Envoyer réservation test</button>
+</body>
+</html>
