@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Liste des voyages</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Voyages disponibles</h1>
+  <table border="1" id="table-voyages">
+    <thead>
+      <tr>
+        <th>Destination</th>
+        <th>Prix</th>
+        <th>Durée (jours)</th>
+        <th>Date départ</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    async function afficherVoyages() {
+      const voyagesCol = collection(db, 'voyages');
+      const voyagesSnapshot = await getDocs(voyagesCol);
+      const tbody = document.querySelector('#table-voyages tbody');
+      tbody.innerHTML = '';
+
+      voyagesSnapshot.forEach(doc => {
+        const v = doc.data();
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${v.destination}</td>
+          <td>${v.prix} $</td>
+          <td>${v.duree}</td>
+          <td>${v.date_depart}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    afficherVoyages();
+  </script>
+</body>
+</html>
