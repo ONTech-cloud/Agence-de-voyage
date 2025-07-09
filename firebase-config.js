@@ -4,9 +4,9 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebas
 
 const firebaseConfig = {
   apiKey: "AIzaSyD...TonCodeIci...",
-  authDomain: "monprojet-12345.firebaseapp.com",
-  projectId: "monprojet-12345",
-  storageBucket: "monprojet-12345.appspot.com",
+  authDomain: "agence-voyage.firebaseapp.com",
+  projectId: "agence-voyage",
+  storageBucket: "agence-voyage.appspot.com",
   messagingSenderId: "1234567890",
   appId: "1:1234567890:web:abcdef123456"
 };
