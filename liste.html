@@ -1,213 +1,373 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Liste des Réservations</title>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import {
-      getFirestore, collection, getDocs, deleteDoc, doc, updateDoc
-    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyB9UUdqL1tnF5zHBbFzfNszStvOe8DRDJE",
-      authDomain: "agence-voyage-2c207.firebaseapp.com",
-      projectId: "agence-voyage-2c207",
-      storageBucket: "agence-voyage-2c207.firebasestorage.app",
-      messagingSenderId: "166889748731",
-      appId: "1:166889748731:web:24e0ba99ecc4d9b0acd85e"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const reservationsCol = collection(db, "reservations");
-
-    async function fetchReservations() {
-      const snapshot = await getDocs(reservationsCol);
-      const listContainer = document.getElementById("reservation-list");
-      listContainer.innerHTML = "";
-      if(snapshot.empty) {
-        listContainer.innerHTML = "<p class='empty-msg'>Aucune réservation trouvée.</p>";
-        return;
-      }
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const id = docSnap.id;
-
-        const container = document.createElement("div");
-        container.classList.add("reservation-card");
-
-        container.innerHTML = `
-          <div class="header">
-            <h3>Vol #${data.num_vol || "N/A"} - ${data.depart} → ${data.arrivee}</h3>
-            <div class="btns">
-              <button class="edit-btn" data-id="${id}">Modifier</button>
-              <button class="delete-btn" data-id="${id}">Supprimer</button>
-            </div>
-          </div>
-          <div class="details">
-            <p><strong>Date départ:</strong> ${data.date_depart || "-"}</p>
-            <p><strong>Jour arrivée:</strong> ${data.jour_arrivee || "-"}</p>
-            <p><strong>Heure départ:</strong> ${data.heure_depart || "-"}</p>
-            <p><strong>Heure arrivée:</strong> ${data.heure_arrivee || "-"}</p>
-            <p><strong>Compagnie:</strong> ${data.compagnie || "-"}</p>
-            <p><strong>Classe:</strong> ${data.classe || "-"}</p>
-            <p><strong>Terminal:</strong> ${data.terminal || "-"}</p>
-            <p><strong>Porte:</strong> ${data.porte || "-"}</p>
-            <p><strong>Passagers:</strong></p>
-            <ul>
-              ${data.passagers?.map(p => `
-                <li>${p.nom} - ${p.age} ans - Tel: ${p.tel} - Email: ${p.email} - Billet #: ${p.billet}</li>
-              `).join("") || "<li>Aucun passager</li>"}
-            </ul>
-          </div>
-        `;
-
-        listContainer.appendChild(container);
-      });
-
-      // Event listeners for delete
-      document.querySelectorAll(".delete-btn").forEach(btn => {
-        btn.onclick = async e => {
-          const id = e.target.dataset.id;
-          if(confirm("Confirmez-vous la suppression de cette réservation ?")) {
-            await deleteDoc(doc(db, "reservations", id));
-            alert("Réservation supprimée.");
-            fetchReservations();
-          }
-        };
-      });
-
-      // Event listeners for edit
-      document.querySelectorAll(".edit-btn").forEach(btn => {
-        btn.onclick = e => {
-          const id = e.target.dataset.id;
-          // Redirige vers ajouter.html avec l'id en paramètre pour modification
-          window.location.href = `ajouter.html?id=${id}`;
-        };
-      });
-    }
-
-    window.onload = () => {
-      fetchReservations();
-    };
-  </script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0; padding: 20px;
-      background: #f5f7fa;
-      color: #333;
-      min-height: 100vh;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 25px;
-      color: #004080;
-    }
-    .empty-msg {
-      text-align: center;
-      font-style: italic;
-      color: #777;
-      margin-top: 50px;
-    }
-    .reservation-card {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
-      margin-bottom: 20px;
-      padding: 20px;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-      transition: transform 0.2s ease-in-out;
-    }
-    .reservation-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 20px rgb(0 0 0 / 0.15);
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 10px;
-      margin-bottom: 15px;
-    }
-    .header h3 {
-      margin: 0;
-      font-weight: 600;
-      color: #004080;
-    }
-    .btns button {
-      border: none;
-      background: #007bff;
-      color: white;
-      padding: 7px 14px;
-      margin-left: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transition: background 0.3s ease;
-    }
-    .btns button:hover {
-      background: #0056b3;
-    }
-    .btns button.delete-btn {
-      background: #dc3545;
-    }
-    .btns button.delete-btn:hover {
-      background: #a71d2a;
-    }
-    .details p {
-      margin: 5px 0;
-      line-height: 1.4;
-    }
-    .details ul {
-      padding-left: 20px;
-      margin-top: 5px;
-      margin-bottom: 0;
-    }
-    .details ul li {
-      margin-bottom: 4px;
-      font-size: 0.95rem;
-      color: #444;
-    }
-    /* Bouton retour */
-    #back-button {
-      display: block;
-      max-width: 900px;
-      margin: 20px auto 40px auto;
-      text-align: center;
-    }
-    #back-button button {
-      font-family: 'Inter', sans-serif;
-      background: #004080;
-      color: white;
-      border: none;
-      padding: 12px 30px;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    #back-button button:hover {
-      background-color: #002f57;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Réservation Vol - Ajouter / Modifier</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f4f8;
+    color: #222;
+    margin: 0; padding: 0;
+  }
+  main {
+    max-width: 900px;
+    margin: 2rem auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    padding: 2rem 3rem;
+  }
+  h1 {
+    text-align: center;
+    color: #0366d6;
+    margin-bottom: 1.5rem;
+  }
+  label {
+    display: block;
+    margin-top: 1rem;
+    font-weight: 600;
+    color: #444;
+  }
+  input, select {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.3rem;
+    border-radius: 6px;
+    border: 1px solid #bbb;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease-in-out;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #0366d6;
+    box-shadow: 0 0 5px #0366d6aa;
+  }
+  .section {
+    margin-bottom: 2rem;
+  }
+  .passager-block {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #fafafa;
+  }
+  button {
+    background: #0366d6;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.3rem;
+    border-radius: 7px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-right: 1rem;
+    transition: background-color 0.2s ease-in-out;
+  }
+  button:hover {
+    background: #024b9b;
+  }
+  .btn-group {
+    text-align: center;
+    margin-top: 2rem;
+  }
+  .btn-secondary {
+    background: #555;
+  }
+  .btn-secondary:hover {
+    background: #333;
+  }
+  .error {
+    color: #c0392b;
+    margin-top: 0.5rem;
+  }
+</style>
 </head>
 <body>
-  <h1>Liste des Réservations</h1>
+<main>
+  <h1 id="form-title">Réservation de Vol</h1>
 
-  <div id="back-button">
-    <button onclick="window.location.href='https://ontech-cloud.github.io/Agence-de-voyage/ajouter.html'">Voir la liste / Ajouter une réservation</button>
-  </div>
+  <form id="formReservation">
 
-  <div id="reservation-list">
-    <!-- Les réservations s'afficheront ici -->
-  </div>
+    <section class="section">
+      <h2>Informations sur le vol</h2>
+
+      <label for="depart">Ville de départ</label>
+      <input type="text" id="depart" name="depart" required />
+
+      <label for="arrivee">Ville d'arrivée</label>
+      <input type="text" id="arrivee" name="arrivee" required />
+
+      <label for="date_depart">Date de départ</label>
+      <input type="date" id="date_depart" name="date_depart" required />
+
+      <label for="jour_arrivee">Jour d'arrivée (ex: lundi, mardi...)</label>
+      <input type="text" id="jour_arrivee" name="jour_arrivee" required />
+
+      <label for="heure_depart">Heure de départ</label>
+      <input type="time" id="heure_depart" name="heure_depart" required />
+
+      <label for="heure_arrivee">Heure d'arrivée</label>
+      <input type="time" id="heure_arrivee" name="heure_arrivee" required />
+
+      <label for="num_vol">Numéro du vol</label>
+      <input type="text" id="num_vol" name="num_vol" required />
+
+      <label for="compagnie">Compagnie aérienne</label>
+      <input type="text" id="compagnie" name="compagnie" required />
+
+      <label for="classe">Classe</label>
+      <select id="classe" name="classe" required>
+        <option value="">Sélectionnez</option>
+        <option value="Économique">Économique</option>
+        <option value="Affaires">Affaires</option>
+        <option value="Première">Première</option>
+      </select>
+
+      <label for="terminal">Terminal</label>
+      <input type="text" id="terminal" name="terminal" />
+
+      <label for="porte">Porte d'embarquement</label>
+      <input type="text" id="porte" name="porte" />
+    </section>
+
+    <section class="section">
+      <h2>Informations sur les passagers</h2>
+      <div id="passagers-container"></div>
+      <button type="button" id="ajouter-passager">+ Ajouter un passager</button>
+    </section>
+
+    <div class="btn-group">
+      <button type="submit" id="btnSubmit">Réserver</button>
+      <button type="button" class="btn-secondary" id="voir-liste">Voir la liste</button>
+    </div>
+
+    <p id="msgError" class="error"></p>
+  </form>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    doc,
+    getDoc,
+    updateDoc
+  } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+  // Configuration Firebase (remplace par la tienne)
+  const firebaseConfig = {
+    apiKey: "AIzaSyB9UUdqL1tnF5zHBbFzfNszStvOe8DRDJE",
+    authDomain: "agence-voyage-2c207.firebaseapp.com",
+    projectId: "agence-voyage-2c207",
+    storageBucket: "agence-voyage-2c207.appspot.com",
+    messagingSenderId: "166889748731",
+    appId: "1:166889748731:web:24e0ba99ecc4d9b0acd85e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const form = document.getElementById("formReservation");
+  const passagersContainer = document.getElementById("passagers-container");
+  const ajouterPassagerBtn = document.getElementById("ajouter-passager");
+  const voirListeBtn = document.getElementById("voir-liste");
+  const msgError = document.getElementById("msgError");
+  const formTitle = document.getElementById("form-title");
+  const btnSubmit = document.getElementById("btnSubmit");
+
+  let passagerCount = 0;
+  let editingId = null;
+
+  function creerPassagerBlock(data = {}) {
+    passagerCount++;
+    const div = document.createElement("div");
+    div.className = "passager-block";
+    div.dataset.index = passagerCount;
+
+    div.innerHTML = `
+      <label>Nom complet</label>
+      <input type="text" name="nom_passager_${passagerCount}" required value="${data.nom || ""}" />
+      <label>Âge</label>
+      <input type="number" name="age_passager_${passagerCount}" min="0" required value="${data.age || ""}" />
+      <label>Téléphone</label>
+      <input type="tel" name="tel_passager_${passagerCount}" required value="${data.tel || ""}" />
+      <label>Email</label>
+      <input type="email" name="email_passager_${passagerCount}" required value="${data.email || ""}" />
+      <label>Numéro de billet</label>
+      <input type="text" name="billet_passager_${passagerCount}" required value="${data.billet || ""}" />
+      <button type="button" class="btn-supprimer">Supprimer ce passager</button>
+    `;
+
+    // Bouton supprimer ce passager
+    div.querySelector(".btn-supprimer").addEventListener("click", () => {
+      div.remove();
+      actualiserIndicesPassagers();
+    });
+
+    passagersContainer.appendChild(div);
+  }
+
+  // Met à jour les indices et noms des inputs quand on supprime un passager
+  function actualiserIndicesPassagers() {
+    const blocks = passagersContainer.querySelectorAll(".passager-block");
+    passagerCount = blocks.length;
+    blocks.forEach((block, i) => {
+      block.dataset.index = i + 1;
+      const inputs = block.querySelectorAll("input");
+      inputs.forEach(input => {
+        const name = input.name;
+        const type = input.type;
+        if (name.includes("nom_passager_")) input.name = `nom_passager_${i + 1}`;
+        else if (name.includes("age_passager_")) input.name = `age_passager_${i + 1}`;
+        else if (name.includes("tel_passager_")) input.name = `tel_passager_${i + 1}`;
+        else if (name.includes("email_passager_")) input.name = `email_passager_${i + 1}`;
+        else if (name.includes("billet_passager_")) input.name = `billet_passager_${i + 1}`;
+      });
+    });
+  }
+
+  // Lecture paramètre id url
+  function getParamId() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("id");
+  }
+
+  // Remplir formulaire avec données vol et passagers
+  function remplirForm(data) {
+    document.getElementById("depart").value = data.depart || "";
+    document.getElementById("arrivee").value = data.arrivee || "";
+    document.getElementById("date_depart").value = data.date_depart || "";
+    document.getElementById("jour_arrivee").value = data.jour_arrivee || "";
+    document.getElementById("heure_depart").value = data.heure_depart || "";
+    document.getElementById("heure_arrivee").value = data.heure_arrivee || "";
+    document.getElementById("num_vol").value = data.num_vol || "";
+    document.getElementById("compagnie").value = data.compagnie || "";
+    document.getElementById("classe").value = data.classe || "";
+    document.getElementById("terminal").value = data.terminal || "";
+    document.getElementById("porte").value = data.porte || "";
+
+    // Supprimer passagers existants (si modif)
+    passagersContainer.innerHTML = "";
+    passagerCount = 0;
+
+    if (data.passagers && Array.isArray(data.passagers)) {
+      data.passagers.forEach(p => creerPassagerBlock({
+        nom: p.nom,
+        age: p.age,
+        tel: p.tel,
+        email: p.email,
+        billet: p.billet
+      }));
+    }
+  }
+
+  // Charger données si on modifie
+  async function chargerReservation(id) {
+    try {
+      const docRef = doc(db, "reservations", id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        remplirForm(docSnap.data());
+        editingId = id;
+        formTitle.textContent = "Modifier la réservation";
+        btnSubmit.textContent = "Mettre à jour";
+      } else {
+        msgError.textContent = "Réservation introuvable.";
+      }
+    } catch (e) {
+      msgError.textContent = "Erreur lors du chargement.";
+      console.error(e);
+    }
+  }
+
+  // Récupérer données du formulaire pour sauvegarder
+  function recupererDonneesForm() {
+    const vol = {
+      depart: form.depart.value.trim(),
+      arrivee: form.arrivee.value.trim(),
+      date_depart: form.date_depart.value,
+      jour_arrivee: form.jour_arrivee.value.trim(),
+      heure_depart: form.heure_depart.value,
+      heure_arrivee: form.heure_arrivee.value,
+      num_vol: form.num_vol.value.trim(),
+      compagnie: form.compagnie.value.trim(),
+      classe: form.classe.value,
+      terminal: form.terminal.value.trim(),
+      porte: form.porte.value.trim(),
+      passagers: []
+    };
+
+    const passagerBlocks = passagersContainer.querySelectorAll(".passager-block");
+    for (const block of passagerBlocks) {
+      const p = {
+        nom: block.querySelector(`input[name^="nom_passager_"]`).value.trim(),
+        age: Number(block.querySelector(`input[name^="age_passager_"]`).value),
+        tel: block.querySelector(`input[name^="tel_passager_"]`).value.trim(),
+        email: block.querySelector(`input[name^="email_passager_"]`).value.trim(),
+        billet: block.querySelector(`input[name^="billet_passager_"]`).value.trim()
+      };
+      vol.passagers.push(p);
+    }
+    return vol;
+  }
+
+  // Événement soumission formulaire
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msgError.textContent = "";
+
+    const data = recupererDonneesForm();
+
+    if (data.passagers.length === 0) {
+      msgError.textContent = "Ajoutez au moins un passager.";
+      return;
+    }
+
+    try {
+      if (editingId) {
+        // Mise à jour document
+        const docRef = doc(db, "reservations", editingId);
+        await updateDoc(docRef, data);
+        alert("Réservation mise à jour avec succès !");
+      } else {
+        // Nouveau document
+        await addDoc(collection(db, "reservations"), data);
+        alert("Réservation ajoutée avec succès !");
+      }
+      // Après soumission, rediriger vers liste.html
+      window.location.href = "https://ontech-cloud.github.io/Agence-de-voyage/liste.html";
+    } catch (error) {
+      msgError.textContent = "Erreur lors de l'enregistrement.";
+      console.error(error);
+    }
+  });
+
+  // Ajouter passager au clic
+  ajouterPassagerBtn.addEventListener("click", () => {
+    creerPassagerBlock();
+  });
+
+  // Voir la liste
+  voirListeBtn.addEventListener("click", () => {
+    window.location.href = "https://ontech-cloud.github.io/Agence-de-voyage/liste.html";
+  });
+
+  // Initialisation
+  window.addEventListener("load", () => {
+    const id = getParamId();
+    if (id) {
+      chargerReservation(id);
+    } else {
+      // Pas d'id = formulaire vide, au moins un passager par défaut
+      creerPassagerBlock();
+    }
+  });
+</script>
 </body>
 </html>
