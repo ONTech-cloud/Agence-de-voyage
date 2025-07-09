@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ajouter un voyage</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Ajouter un nouveau voyage</h1>
+  <form id="form-ajout">
+    <label>Destination : <input type="text" id="destination" required></label><br />
+    <label>Prix : <input type="number" id="prix" required></label><br />
+    <label>Durée (jours) : <input type="number" id="duree" required></label><br />
+    <label>Date de départ : <input type="date" id="date" required></label><br />
+    <button type="submit">Ajouter</button>
+  </form>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const form = document.getElementById('form-ajout');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const destination = document.getElementById('destination').value.trim();
+      const prix = parseFloat(document.getElementById('prix').value);
+      const duree = parseInt(document.getElementById('duree').value);
+      const date_depart = document.getElementById('date').value;
+
+      if (!destination || !prix || !duree || !date_depart) {
+        alert("Tous les champs sont obligatoires");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, 'voyages'), {
+          destination,
+          prix,
+          duree,
+          date_depart
+        });
+        alert("Voyage ajouté avec succès !");
+        form.reset();
+      } catch (error) {
+        alert("Erreur : " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
