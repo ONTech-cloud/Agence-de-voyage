@@ -2,98 +2,212 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Liste des Réservations</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs, deleteDoc, doc, updateDoc
+    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB9UUdqL1tnF5zHBbFzfNszStvOe8DRDJE",
+      authDomain: "agence-voyage-2c207.firebaseapp.com",
+      projectId: "agence-voyage-2c207",
+      storageBucket: "agence-voyage-2c207.firebasestorage.app",
+      messagingSenderId: "166889748731",
+      appId: "1:166889748731:web:24e0ba99ecc4d9b0acd85e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const reservationsCol = collection(db, "reservations");
+
+    async function fetchReservations() {
+      const snapshot = await getDocs(reservationsCol);
+      const listContainer = document.getElementById("reservation-list");
+      listContainer.innerHTML = "";
+      if(snapshot.empty) {
+        listContainer.innerHTML = "<p class='empty-msg'>Aucune réservation trouvée.</p>";
+        return;
+      }
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const id = docSnap.id;
+
+        const container = document.createElement("div");
+        container.classList.add("reservation-card");
+
+        container.innerHTML = `
+          <div class="header">
+            <h3>Vol #${data.num_vol || "N/A"} - ${data.depart} → ${data.arrivee}</h3>
+            <div class="btns">
+              <button class="edit-btn" data-id="${id}">Modifier</button>
+              <button class="delete-btn" data-id="${id}">Supprimer</button>
+            </div>
+          </div>
+          <div class="details">
+            <p><strong>Date départ:</strong> ${data.date_depart || "-"}</p>
+            <p><strong>Jour arrivée:</strong> ${data.jour_arrivee || "-"}</p>
+            <p><strong>Heure départ:</strong> ${data.heure_depart || "-"}</p>
+            <p><strong>Heure arrivée:</strong> ${data.heure_arrivee || "-"}</p>
+            <p><strong>Compagnie:</strong> ${data.compagnie || "-"}</p>
+            <p><strong>Classe:</strong> ${data.classe || "-"}</p>
+            <p><strong>Terminal:</strong> ${data.terminal || "-"}</p>
+            <p><strong>Porte:</strong> ${data.porte || "-"}</p>
+            <p><strong>Passagers:</strong></p>
+            <ul>
+              ${data.passagers?.map(p => `
+                <li>${p.nom} - ${p.age} ans - Tel: ${p.tel} - Email: ${p.email} - Billet #: ${p.billet}</li>
+              `).join("") || "<li>Aucun passager</li>"}
+            </ul>
+          </div>
+        `;
+
+        listContainer.appendChild(container);
+      });
+
+      // Event listeners for delete
+      document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.onclick = async e => {
+          const id = e.target.dataset.id;
+          if(confirm("Confirmez-vous la suppression de cette réservation ?")) {
+            await deleteDoc(doc(db, "reservations", id));
+            alert("Réservation supprimée.");
+            fetchReservations();
+          }
+        };
+      });
+
+      // Event listeners for edit
+      document.querySelectorAll(".edit-btn").forEach(btn => {
+        btn.onclick = e => {
+          const id = e.target.dataset.id;
+          // Redirige vers ajouter.html avec l'id en paramètre pour modification
+          window.location.href = `ajouter.html?id=${id}`;
+        };
+      });
+    }
+
+    window.onload = () => {
+      fetchReservations();
+    };
+  </script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
     body {
-      font-family: Arial, sans-serif;
-      background: #eef6ff;
-      margin: 20px;
-      color: #222;
+      font-family: 'Inter', sans-serif;
+      margin: 0; padding: 20px;
+      background: #f5f7fa;
+      color: #333;
+      min-height: 100vh;
     }
     h1 {
       text-align: center;
-      color: #3759e6;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      color: #004080;
     }
-    .reservation {
+    .empty-msg {
+      text-align: center;
+      font-style: italic;
+      color: #777;
+      margin-top: 50px;
+    }
+    .reservation-card {
       background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
       margin-bottom: 20px;
+      padding: 20px;
       max-width: 900px;
       margin-left: auto;
       margin-right: auto;
+      transition: transform 0.2s ease-in-out;
     }
-    .vol-info, .passager-info {
-      margin-bottom: 10px;
+    .reservation-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 20px rgb(0 0 0 / 0.15);
     }
-    .vol-info strong, .passager-info strong {
-      color: #3759e6;
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
     }
-    .passager-info {
-      border-top: 1px solid #ddd;
-      padding-top: 10px;
-      margin-top: 10px;
+    .header h3 {
+      margin: 0;
+      font-weight: 600;
+      color: #004080;
+    }
+    .btns button {
+      border: none;
+      background: #007bff;
+      color: white;
+      padding: 7px 14px;
+      margin-left: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.3s ease;
+    }
+    .btns button:hover {
+      background: #0056b3;
+    }
+    .btns button.delete-btn {
+      background: #dc3545;
+    }
+    .btns button.delete-btn:hover {
+      background: #a71d2a;
+    }
+    .details p {
+      margin: 5px 0;
+      line-height: 1.4;
+    }
+    .details ul {
+      padding-left: 20px;
+      margin-top: 5px;
+      margin-bottom: 0;
+    }
+    .details ul li {
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+      color: #444;
+    }
+    /* Bouton retour */
+    #back-button {
+      display: block;
+      max-width: 900px;
+      margin: 20px auto 40px auto;
+      text-align: center;
+    }
+    #back-button button {
+      font-family: 'Inter', sans-serif;
+      background: #004080;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #back-button button:hover {
+      background-color: #002f57;
     }
   </style>
 </head>
 <body>
   <h1>Liste des Réservations</h1>
-  <div id="listeReservations">Chargement des réservations...</div>
 
-  <script type="module">
-    import { db } from './firebase-config.js';
-    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+  <div id="back-button">
+    <button onclick="window.location.href='https://ontech-cloud.github.io/Agence-de-voyage/ajouter.html'">Voir la liste / Ajouter une réservation</button>
+  </div>
 
-    const listeDiv = document.getElementById('listeReservations');
-
-    async function afficherReservations() {
-      const querySnapshot = await getDocs(collection(db, "reservations"));
-      if (querySnapshot.empty) {
-        listeDiv.innerHTML = "<p>Aucune réservation trouvée.</p>";
-        return;
-      }
-
-      listeDiv.innerHTML = "";
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
-
-        const divReservation = document.createElement('div');
-        divReservation.className = "reservation";
-
-        divReservation.innerHTML = `
-          <div class="vol-info">
-            <strong>Vol de ${data.depart} à ${data.arrivee}</strong><br/>
-            Date départ: ${data.date_depart} &nbsp;&nbsp; Jour arrivée: ${data.jour_arrivee}<br/>
-            Heure départ: ${data.heure_depart} &nbsp;&nbsp; Heure arrivée: ${data.heure_arrivee}<br/>
-            Numéro vol: ${data.num_vol} &nbsp;&nbsp; Compagnie: ${data.compagnie}<br/>
-            Classe: ${data.classe} &nbsp;&nbsp; Terminal: ${data.terminal} &nbsp;&nbsp; Porte: ${data.porte}
-          </div>
-          <div>
-            <strong>Passagers:</strong>
-          </div>
-        `;
-
-        data.passagers.forEach((p, i) => {
-          const divPassager = document.createElement('div');
-          divPassager.className = "passager-info";
-          divPassager.innerHTML = `
-            <em>Passager ${i+1}:</em><br/>
-            Nom: ${p.nom}<br/>
-            Âge: ${p.age}<br/>
-            Téléphone: ${p.tel}<br/>
-            Email: ${p.email}<br/>
-            Numéro billet: ${p.billet}
-          `;
-          divReservation.appendChild(divPassager);
-        });
-
-        listeDiv.appendChild(divReservation);
-      });
-    }
-
-    afficherReservations();
-  </script>
+  <div id="reservation-list">
+    <!-- Les réservations s'afficheront ici -->
+  </div>
 </body>
 </html>
