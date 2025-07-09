@@ -1,51 +1,138 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Ajouter un voyage</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Réservation de vol</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #fff);
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #00796b;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .passager {
+      border: 2px solid #009688;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 20px;
+      background-color: #f1f1f1;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #009688;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #00796b;
+    }
+  </style>
 </head>
 <body>
-  <h1>Ajouter un nouveau voyage</h1>
-  <form id="form-ajout">
-    <label>Destination : <input type="text" id="destination" required></label><br />
-    <label>Prix : <input type="number" id="prix" required></label><br />
-    <label>Durée (jours) : <input type="number" id="duree" required></label><br />
-    <label>Date de départ : <input type="date" id="date" required></label><br />
-    <button type="submit">Ajouter</button>
+  <h1>Formulaire de Réservation de Vol</h1>
+  <form id="formulaire">
+    <div class="form-group">
+      <label>Ville de départ</label>
+      <input type="text" name="depart">
+    </div>
+    <div class="form-group">
+      <label>Ville d'arrivée</label>
+      <input type="text" name="arrivee">
+    </div>
+    <div class="form-group">
+      <label>Date de départ</label>
+      <input type="date" name="date_depart">
+    </div>
+    <div class="form-group">
+      <label>Jour d'arrivée</label>
+      <input type="text" name="jour_arrivee">
+    </div>
+    <div class="form-group">
+      <label>Heure de départ</label>
+      <input type="time" name="heure_depart">
+    </div>
+    <div class="form-group">
+      <label>Heure d'arrivée</label>
+      <input type="time" name="heure_arrivee">
+    </div>
+    <div class="form-group">
+      <label>Numéro de vol</label>
+      <input type="text" name="num_vol">
+    </div>
+    <div class="form-group">
+      <label>Compagnie aérienne</label>
+      <input type="text" name="compagnie">
+    </div>
+    <div class="form-group">
+      <label>Classe (économique, affaires, etc.)</label>
+      <input type="text" name="classe">
+    </div>
+    <div class="form-group">
+      <label>Terminal</label>
+      <input type="text" name="terminal">
+    </div>
+    <div class="form-group">
+      <label>Porte d'embarquement</label>
+      <input type="text" name="porte">
+    </div>
+
+    <div id="passagers"></div>
+
+    <button type="button" onclick="ajouterPassager()">Ajouter un passager</button>
+    <br><br>
+    <button type="submit">Soumettre</button>
   </form>
 
-  <script type="module">
-    import { db } from './firebase-config.js';
-    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <script>
+    let compteur = 0;
 
-    const form = document.getElementById('form-ajout');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const destination = document.getElementById('destination').value.trim();
-      const prix = parseFloat(document.getElementById('prix').value);
-      const duree = parseInt(document.getElementById('duree').value);
-      const date_depart = document.getElementById('date').value;
-
-      if (!destination || !prix || !duree || !date_depart) {
-        alert("Tous les champs sont obligatoires");
-        return;
-      }
-
-      try {
-        await addDoc(collection(db, 'voyages'), {
-          destination,
-          prix,
-          duree,
-          date_depart
-        });
-        alert("Voyage ajouté avec succès !");
-        form.reset();
-      } catch (error) {
-        alert("Erreur : " + error.message);
-      }
-    });
+    function ajouterPassager() {
+      compteur++;
+      const div = document.createElement('div');
+      div.className = 'passager';
+      div.innerHTML = `
+        <h3>Passager #${compteur}</h3>
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" name="nom_passager_${compteur}">
+        </div>
+        <div class="form-group">
+          <label>Âge</label>
+          <input type="number" name="age_passager_${compteur}">
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" name="tel_passager_${compteur}">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email_passager_${compteur}">
+        </div>
+        <div class="form-group">
+          <label>Numéro de billet</label>
+          <input type="text" name="billet_passager_${compteur}">
+        </div>
+      `;
+      document.getElementById('passagers').appendChild(div);
+    }
   </script>
 </body>
 </html>
