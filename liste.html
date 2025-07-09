@@ -1,48 +1,79 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Liste des voyages</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Liste des réservations</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f1f8e9;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #33691e;
+    }
+    .bloc {
+      background-color: #ffffff;
+      border: 1px solid #c5e1a5;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+    }
+    .passager {
+      margin-left: 15px;
+      background-color: #f0f4c3;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Voyages disponibles</h1>
-  <table border="1" id="table-voyages">
-    <thead>
-      <tr>
-        <th>Destination</th>
-        <th>Prix</th>
-        <th>Durée (jours)</th>
-        <th>Date départ</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <h1>Liste des réservations</h1>
+  <div id="liste"></div>
 
-  <script type="module">
-    import { db } from './firebase-config.js';
-    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <script>
+    const data = JSON.parse(localStorage.getItem("reservation"));
+    const container = document.getElementById("liste");
 
-    async function afficherVoyages() {
-      const voyagesCol = collection(db, 'voyages');
-      const voyagesSnapshot = await getDocs(voyagesCol);
-      const tbody = document.querySelector('#table-voyages tbody');
-      tbody.innerHTML = '';
+    if (data) {
+      const bloc = document.createElement("div");
+      bloc.className = "bloc";
+      bloc.innerHTML += `
+        <p><strong>Départ :</strong> ${data.depart}</p>
+        <p><strong>Arrivée :</strong> ${data.arrivee}</p>
+        <p><strong>Date de départ :</strong> ${data.date_depart}</p>
+        <p><strong>Jour d’arrivée :</strong> ${data.jour_arrivee}</p>
+        <p><strong>Heure de départ :</strong> ${data.heure_depart}</p>
+        <p><strong>Heure d’arrivée :</strong> ${data.heure_arrivee}</p>
+        <p><strong>Numéro de vol :</strong> ${data.num_vol}</p>
+        <p><strong>Compagnie :</strong> ${data.compagnie}</p>
+        <p><strong>Classe :</strong> ${data.classe}</p>
+        <p><strong>Terminal :</strong> ${data.terminal}</p>
+        <p><strong>Porte :</strong> ${data.porte}</p>
+      `;
 
-      voyagesSnapshot.forEach(doc => {
-        const v = doc.data();
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${v.destination}</td>
-          <td>${v.prix} $</td>
-          <td>${v.duree}</td>
-          <td>${v.date_depart}</td>
+      let i = 1;
+      while (data[`nom_passager_${i}`]) {
+        const p = document.createElement("div");
+        p.className = "passager";
+        p.innerHTML = `
+          <h4>Passager ${i}</h4>
+          <p><strong>Nom :</strong> ${data[`nom_passager_${i}`]}</p>
+          <p><strong>Âge :</strong> ${data[`age_passager_${i}`]}</p>
+          <p><strong>Téléphone :</strong> ${data[`tel_passager_${i}`]}</p>
+          <p><strong>Email :</strong> ${data[`email_passager_${i}`]}</p>
+          <p><strong>Billet :</strong> ${data[`billet_passager_${i}`]}</p>
         `;
-        tbody.appendChild(tr);
-      });
-    }
+        bloc.appendChild(p);
+        i++;
+      }
 
-    afficherVoyages();
+      container.appendChild(bloc);
+    } else {
+      container.innerHTML = "<p>Aucune réservation enregistrée.</p>";
+    }
   </script>
 </body>
 </html>
