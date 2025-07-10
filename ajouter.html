@@ -1,208 +1,135 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Réserver un vol</title>
+  <title>Réservation de vol</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f6f8fc;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #004aad;
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.5rem;
-    }
-    header button {
-      background: white;
-      color: #004aad;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    header button:hover {
-      background: #dbe8ff;
-    }
-
-    main {
-      max-width: 900px;
-      margin: 2rem auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    fieldset {
-      border: none;
-      margin-bottom: 2rem;
-      padding: 1rem;
-      border-left: 5px solid #004aad;
-      background: #f9fafe;
-    }
-
-    legend {
-      font-weight: bold;
-      font-size: 1.2rem;
-      color: #004aad;
-    }
-
-    label {
-      display: block;
-      margin: 1rem 0 0.3rem;
-    }
-
-    input {
-      width: 100%;
-      padding: 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-
-    button {
-      background-color: #004aad;
-      color: white;
-      border: none;
-      padding: 0.7rem 1.5rem;
-      cursor: pointer;
-      border-radius: 6px;
-      font-size: 1rem;
-      margin-top: 1rem;
-      transition: background-color 0.2s;
-    }
-
-    button:hover {
-      background-color: #00327a;
-    }
-
-    #passagers fieldset {
-      border-left-color: #28a745;
-    }
+    body { background-color: #f4f8fb; padding: 2rem; font-family: 'Segoe UI', sans-serif; }
+    h1 { color: #0d6efd; }
+    .passager-section { background-color: #fff; padding: 1rem; margin-top: 1rem; border-radius: 0.5rem; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Réservation de Vol</h1>
-    <button onclick="window.location.href='https://ontech-cloud.github.io/Agence-de-voyage/liste.html'">Voir la liste</button>
-  </header>
+  <div class="container">
+    <h1>Réserver un vol</h1>
+    <form id="formulaire">
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label for="depart">Ville de départ</label>
+          <input type="text" id="depart" name="depart" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+          <label for="arrivee">Ville d'arrivée</label>
+          <input type="text" id="arrivee" name="arrivee" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+          <label for="date_depart">Date de départ</label>
+          <input type="date" id="date_depart" name="date_depart" class="form-control" required>
+        </div>
+      </div>
 
-  <main>
-    <form id="formReservation" onsubmit="envoyerReservation(event)">
-      <fieldset>
-        <legend>Informations sur le vol</legend>
-        <label>Départ : <input name="depart" required></label>
-        <label>Arrivée : <input name="arrivee" required></label>
-        <label>Date départ : <input type="date" name="date_depart" required></label>
-        <label>Jour arrivée : <input type="date" name="jour_arrivee" required></label>
-        <label>Heure départ : <input type="time" name="heure_depart" required></label>
-        <label>Heure arrivée : <input type="time" name="heure_arrivee" required></label>
-        <label>Numéro de vol : <input name="num_vol" required></label>
-        <label>Compagnie : <input name="compagnie" required></label>
-        <label>Classe : <input name="classe" required></label>
-        <label>Terminal : <input name="terminal" required></label>
-        <label>Porte : <input name="porte" required></label>
-      </fieldset>
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <label for="jour_arrivee">Jour d'arrivée</label>
+          <input type="text" id="jour_arrivee" name="jour_arrivee" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label for="heure_depart">Heure de départ</label>
+          <input type="time" id="heure_depart" name="heure_depart" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label for="heure_arrivee">Heure d'arrivée</label>
+          <input type="time" id="heure_arrivee" name="heure_arrivee" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label for="num_vol">Numéro de vol</label>
+          <input type="text" id="num_vol" name="num_vol" class="form-control">
+        </div>
+      </div>
 
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label for="compagnie">Compagnie aérienne</label>
+          <input type="text" id="compagnie" name="compagnie" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label for="classe">Classe</label>
+          <input type="text" id="classe" name="classe" class="form-control">
+        </div>
+        <div class="col-md-2">
+          <label for="terminal">Terminal</label>
+          <input type="text" id="terminal" name="terminal" class="form-control">
+        </div>
+        <div class="col-md-2">
+          <label for="porte">Porte</label>
+          <input type="text" id="porte" name="porte" class="form-control">
+        </div>
+      </div>
+
+      <h3>Passagers</h3>
       <div id="passagers"></div>
-      <button type="button" onclick="ajouterPassager()">Ajouter un passager</button><br><br>
-      <button type="submit">Réserver</button>
+      <button type="button" id="ajouterPassager" class="btn btn-secondary my-3">Ajouter un passager</button>
+
+      <div class="d-flex justify-content-between">
+        <button type="submit" class="btn btn-primary">Réserver</button>
+        <a href="https://ontech-cloud.github.io/Agence-de-voyage/liste.html" class="btn btn-outline-info">Voir la liste</a>
+      </div>
     </form>
-  </main>
+  </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyB9UUdqL1tnF5zHBbFzfNszStvOe8DRDJE",
-      authDomain: "agence-voyage-2c207.firebaseapp.com",
-      projectId: "agence-voyage-2c207",
-      storageBucket: "agence-voyage-2c207.appspot.com",
-      messagingSenderId: "166889748731",
-      appId: "1:166889748731:web:24e0ba99ecc4d9b0acd85e"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    function creerPassagerForm(num) {
-      return `
-        <fieldset>
-          <legend>Passager ${num}</legend>
-          <label>Nom : <input name="nom_${num}" required></label>
-          <label>Âge : <input type="number" name="age_${num}" required></label>
-          <label>Téléphone : <input type="tel" name="tel_${num}" required></label>
-          <label>Email : <input type="email" name="email_${num}" required></label>
-          <label>Numéro billet : <input name="billet_${num}" required></label>
-        </fieldset>
+  <script>
+    let passagerCount = 0;
+    document.getElementById('ajouterPassager').addEventListener('click', () => {
+      passagerCount++;
+      const passagerDiv = document.createElement('div');
+      passagerDiv.className = 'passager-section';
+      passagerDiv.innerHTML = `
+        <h5>Passager #${passagerCount}</h5>
+        <div class="row">
+          <div class="col-md-4">
+            <label>Nom</label>
+            <input name="nom_passager_${passagerCount}" class="form-control" required>
+          </div>
+          <div class="col-md-2">
+            <label>Âge</label>
+            <input name="age_passager_${passagerCount}" type="number" class="form-control" required>
+          </div>
+          <div class="col-md-3">
+            <label>Téléphone</label>
+            <input name="tel_passager_${passagerCount}" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label>Email</label>
+            <input name="email_passager_${passagerCount}" type="email" class="form-control">
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-md-3">
+            <label>Numéro de billet</label>
+            <input name="billet_passager_${passagerCount}" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label>Handicap</label>
+            <input name="handicap_passager_${passagerCount}" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label>Aide particulière</label>
+            <input name="aide_passager_${passagerCount}" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label>Particularités alimentaires</label>
+            <input name="alimentation_passager_${passagerCount}" class="form-control">
+          </div>
+        </div>
+        <div class="mt-2">
+          <label>Autres informations utiles</label>
+          <textarea name="autres_infos_passager_${passagerCount}" class="form-control"></textarea>
+        </div>
       `;
-    }
-
-    window.ajouterPassager = function() {
-      const container = document.getElementById('passagers');
-      const num = container.children.length + 1;
-      container.insertAdjacentHTML('beforeend', creerPassagerForm(num));
-    };
-
-    window.envoyerReservation = async function(event) {
-      event.preventDefault();
-
-      const form = event.target;
-      const vol = {
-        depart: form.depart.value,
-        arrivee: form.arrivee.value,
-        date_depart: form.date_depart.value,
-        jour_arrivee: form.jour_arrivee.value,
-        heure_depart: form.heure_depart.value,
-        heure_arrivee: form.heure_arrivee.value,
-        num_vol: form.num_vol.value,
-        compagnie: form.compagnie.value,
-        classe: form.classe.value,
-        terminal: form.terminal.value,
-        porte: form.porte.value
-      };
-
-      const passagers = [];
-      const container = document.getElementById('passagers');
-      for(let i = 1; i <= container.children.length; i++) {
-        passagers.push({
-          nom: form[`nom_${i}`].value,
-          age: parseInt(form[`age_${i}`].value),
-          telephone: form[`tel_${i}`].value,
-          email: form[`email_${i}`].value,
-          numero_billet: form[`billet_${i}`].value
-        });
-      }
-
-      vol.passagers = passagers;
-
-      try {
-        const docRef = await addDoc(collection(db, "reservations"), vol);
-        alert("Réservation enregistrée !");
-        form.reset();
-        container.innerHTML = '';
-        ajouterPassager();
-      } catch (e) {
-        alert("Erreur : " + e.message);
-      }
-    };
-
-    window.onload = function() {
-      ajouterPassager();
-    };
+      document.getElementById('passagers').appendChild(passagerDiv);
+    });
   </script>
 </body>
 </html>
