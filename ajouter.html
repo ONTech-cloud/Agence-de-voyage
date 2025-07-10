@@ -33,7 +33,7 @@
       <div class="row mb-3">
         <div class="col-md-3">
           <label for="jour_arrivee">Jour d'arrivée</label>
-          <input type="text" id="jour_arrivee" name="jour_arrivee" class="form-control">
+          <input type="date" id="jour_arrivee" name="jour_arrivee" class="form-control">
         </div>
         <div class="col-md-3">
           <label for="heure_depart">Heure de départ</label>
@@ -131,5 +131,60 @@
       document.getElementById('passagers').appendChild(passagerDiv);
     });
   </script>
+  
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB9UUdqL1tnF5zHBbFzfNszStvOe8DRDJE",
+    authDomain: "agence-voyage-2c207.firebaseapp.com",
+    projectId: "agence-voyage-2c207",
+    storageBucket: "agence-voyage-2c207.appspot.com",
+    messagingSenderId: "166889748731",
+    appId: "1:166889748731:web:24e0ba99ecc4d9b0acd85e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const form = document.getElementById('formulaireReservation');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault(); // ⛔ bloque le rechargement de page
+
+    const data = {
+      depart: form.depart.value,
+      arrivee: form.arrivee.value,
+      date_depart: form.date_depart.value,
+      jour_arrivee: form.jour_arrivee.value,
+      heure_depart: form.heure_depart.value,
+      heure_arrivee: form.heure_arrivee.value,
+      num_vol: form.num_vol.value,
+      compagnie: form.compagnie.value,
+      classe: form.classe.value,
+      terminal: form.terminal.value,
+      porte: form.porte.value,
+      passagers: []
+    };
+
+    const passagerElements = document.querySelectorAll('.passager');
+    passagerElements.forEach(p => {
+      data.passagers.push({
+        nom: p.querySelector('.nom').value,
+        age: p.querySelector('.age').value,
+        tel: p.querySelector('.tel').value,
+        email: p.querySelector('.email').value,
+        billet: p.querySelector('.billet').value,
+        handicap: p.querySelector('.handicap').value,
+        besoins: p.querySelector('.besoins').value,
+        nourriture: p.querySelector('.nourriture').value,
+        autre: p.querySelector('.autre').value
+      });
+    });
+
+    await addDoc(collection(db, "vols"), data);
+    window.location.href = "https://ontech-cloud.github.io/Agence-de-voyage/liste.html";
+  });
+</script>
 </body>
 </html>
