@@ -1,214 +1,128 @@
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Liste des Réservations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Liste des réservations</title>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .vol {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
+    .vol:hover {
+      transform: scale(1.01);
+    }
+    .vol strong {
+      color: #111;
+    }
+    .actions {
+      margin-top: 1rem;
+    }
+    button {
+      background: #ff4d4d;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e63939;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>✈️ Liste des billets réservés</h1>
+  <div id="liste-vols"></div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import {
-      getFirestore, collection, getDocs, deleteDoc, doc, updateDoc
-    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB9UUdqL1tnF5zHBbFzfNszStvOe8DRDJE",
       authDomain: "agence-voyage-2c207.firebaseapp.com",
       projectId: "agence-voyage-2c207",
-      storageBucket: "agence-voyage-2c207.firebasestorage.app",
+      storageBucket: "agence-voyage-2c207.appspot.com",
       messagingSenderId: "166889748731",
       appId: "1:166889748731:web:24e0ba99ecc4d9b0acd85e"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const reservationsCol = collection(db, "reservations");
 
-    async function fetchReservations() {
-      const snapshot = await getDocs(reservationsCol);
-      const listContainer = document.getElementById("reservation-list");
-      listContainer.innerHTML = "";
-      if(snapshot.empty) {
-        listContainer.innerHTML = "<p class='empty-msg'>Aucune réservation trouvée.</p>";
+    const listeContainer = document.getElementById("liste-vols");
+
+    async function chargerVols() {
+      listeContainer.innerHTML = "<p>Chargement...</p>";
+      const volsSnapshot = await getDocs(collection(db, "vols"));
+      if (volsSnapshot.empty) {
+        listeContainer.innerHTML = "<p>Aucun vol détecté.</p>";
         return;
       }
-      snapshot.forEach(docSnap => {
+
+      listeContainer.innerHTML = "";
+      volsSnapshot.forEach(docSnap => {
         const data = docSnap.data();
-        const id = docSnap.id;
-
-        const container = document.createElement("div");
-        container.classList.add("reservation-card");
-
-        container.innerHTML = `
-          <div class="header">
-            <h3>Vol #${data.num_vol || "N/A"} - ${data.depart} → ${data.arrivee}</h3>
-            <div class="btns">
-              <button class="edit-btn" data-id="${id}">Modifier</button>
-              <button class="delete-btn" data-id="${id}">Supprimer</button>
+        const volDiv = document.createElement("div");
+        volDiv.className = "vol";
+        volDiv.innerHTML = `
+          <strong>Départ:</strong> ${data.depart}<br/>
+          <strong>Arrivée:</strong> ${data.arrivee}<br/>
+          <strong>Date départ:</strong> ${data.date_depart}<br/>
+          <strong>Jour d'arrivée:</strong> ${data.jour_arrivee}<br/>
+          <strong>Heure départ:</strong> ${data.heure_depart}<br/>
+          <strong>Heure arrivée:</strong> ${data.heure_arrivee}<br/>
+          <strong>Numéro de vol:</strong> ${data.num_vol}<br/>
+          <strong>Compagnie:</strong> ${data.compagnie}<br/>
+          <strong>Classe:</strong> ${data.classe}<br/>
+          <strong>Terminal:</strong> ${data.terminal}<br/>
+          <strong>Porte:</strong> ${data.porte}<br/>
+          <strong>Passagers:</strong><br/>
+          ${data.passagers ? data.passagers.map(p => `
+            <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
+              - ${p.nom} | Âge: ${p.age} | Tél: ${p.tel} | Email: ${p.email} | Billet: ${p.billet}
+              ${p.handicap ? `| Handicap: ${p.handicap}` : ""}
+              ${p.aide ? `| Aide: ${p.aide}` : ""}
+              ${p.alimentaire ? `| Alimentaire: ${p.alimentaire}` : ""}
+              ${p.autres ? `| Autres: ${p.autres}` : ""}
             </div>
-          </div>
-          <div class="details">
-            <p><strong>Date départ:</strong> ${data.date_depart || "-"}</p>
-            <p><strong>Jour arrivée:</strong> ${data.jour_arrivee || "-"}</p>
-            <p><strong>Heure départ:</strong> ${data.heure_depart || "-"}</p>
-            <p><strong>Heure arrivée:</strong> ${data.heure_arrivee || "-"}</p>
-            <p><strong>Compagnie:</strong> ${data.compagnie || "-"}</p>
-            <p><strong>Classe:</strong> ${data.classe || "-"}</p>
-            <p><strong>Terminal:</strong> ${data.terminal || "-"}</p>
-            <p><strong>Porte:</strong> ${data.porte || "-"}</p>
-            <p><strong>Passagers:</strong></p>
-            <ul>
-              ${data.passagers?.map(p => `
-                <li>${p.nom} - ${p.age} ans - Tel: ${p.tel} - Email: ${p.email} - Billet #: ${p.billet}</li>
-              `).join("") || "<li>Aucun passager</li>"}
-            </ul>
+          `).join("") : "Aucun"}
+          <div class="actions">
+            <button onclick="supprimerVol('${docSnap.id}')">Supprimer</button>
           </div>
         `;
-
-        listContainer.appendChild(container);
-      });
-
-      // Event listeners for delete
-      document.querySelectorAll(".delete-btn").forEach(btn => {
-        btn.onclick = async e => {
-          const id = e.target.dataset.id;
-          if(confirm("Confirmez-vous la suppression de cette réservation ?")) {
-            await deleteDoc(doc(db, "reservations", id));
-            alert("Réservation supprimée.");
-            fetchReservations();
-          }
-        };
-      });
-
-      // Event listeners for edit
-      document.querySelectorAll(".edit-btn").forEach(btn => {
-        btn.onclick = e => {
-          const id = e.target.dataset.id;
-          // Redirige vers ajouter.html avec l'id en paramètre pour modification
-          window.location.href = `ajouter.html?id=${id}`;
-        };
+        listeContainer.appendChild(volDiv);
       });
     }
 
-    window.onload = () => {
-      fetchReservations();
+    window.supprimerVol = async function(id) {
+      if (confirm("Confirmer la suppression ?")) {
+        await deleteDoc(doc(db, "vols", id));
+        chargerVols();
+      }
     };
+
+    chargerVols();
   </script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0; padding: 20px;
-      background: #f5f7fa;
-      color: #333;
-      min-height: 100vh;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 25px;
-      color: #004080;
-    }
-    .empty-msg {
-      text-align: center;
-      font-style: italic;
-      color: #777;
-      margin-top: 50px;
-    }
-    .reservation-card {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
 
-      margin-bottom: 20px;
-      padding: 20px;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-      transition: transform 0.2s ease-in-out;
-    }
-    .reservation-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 20px rgb(0 0 0 / 0.15);
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 10px;
-      margin-bottom: 15px;
-    }
-    .header h3 {
-      margin: 0;
-      font-weight: 600;
-      color: #004080;
-    }
-    .btns button {
-      border: none;
-      background: #007bff;
-      color: white;
-      padding: 7px 14px;
-      margin-left: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transition: background 0.3s ease;
-    }
-    .btns button:hover {
-      background: #0056b3;
-    }
-    .btns button.delete-btn {
-      background: #dc3545;
-    }
-    .btns button.delete-btn:hover {
-      background: #a71d2a;
-    }
-    .details p {
-      margin: 5px 0;
-      line-height: 1.4;
-    }
-    .details ul {
-      padding-left: 20px;
-      margin-top: 5px;
-      margin-bottom: 0;
-    }
-    .details ul li {
-      margin-bottom: 4px;
-      font-size: 0.95rem;
-      color: #444;
-    }
-    /* Bouton retour */
-    #back-button {
-      display: block;
-      max-width: 900px;
-      margin: 20px auto 40px auto;
-      text-align: center;
-    }
-    #back-button button {
-      font-family: 'Inter', sans-serif;
-      background: #004080;
-      color: white;
-      border: none;
-      padding: 12px 30px;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    #back-button button:hover {
-      background-color: #002f57;
-    }
-  </style>
-</head>
-<body>
-  <h1>Liste des Réservations</h1>
-
-
-  <div id="back-button">
-    <button onclick="window.location.href='https://ontech-cloud.github.io/Agence-de-voyage/ajouter.html'">Voir la liste / Ajouter une réservation</button>
-  </div>
-
-
-
-  <div id="reservation-list">
-    <!-- Les réservations s'afficheront ici -->
-  </div>
+</body>
+</html>
